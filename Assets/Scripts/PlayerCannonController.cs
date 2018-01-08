@@ -6,12 +6,18 @@ public class PlayerCannonController : CannonController {
 
 
 	private GameObject playerObj;
+	public bool active;
+	public float dist;
 	// Use this for initialization
 	void Start () {
 		Initialize ();
 		CalculateMaxRange ();
-		target = null;
+		active = false;
+		if(!target)
+			target = GameObject.Find ("TargetPlatform").transform.GetChild (0);
 		
+		Vector3 dir = target.transform.position - transform.position;
+		dist = Mathf.Sqrt(dir.x*dir.x + dir.z*dir.z);
 	}
 	
 	// Update is called once per frame
@@ -20,7 +26,7 @@ public class PlayerCannonController : CannonController {
 			CalculateMaxRange ();
 
 
-		if (target) {
+		if (target && active) {
 			Aim ();
 			if (elapsedTime < fireRate)
 				elapsedTime += Time.deltaTime;
@@ -38,7 +44,8 @@ public class PlayerCannonController : CannonController {
 			//Debug.Log ("hit player");
 			if (!other.GetComponent<PlayerController> ().usingCannon){
 				Debug.Log ("Got inc annon");
-				target = GameObject.Find ("TargetPlatform").transform.FindChild ("Target");
+
+				active = true;
 				playerObj = other.gameObject;
 				playerObj.GetComponent<PlayerController> ().DisableInput ();
 				playerObj.GetComponent<PlayerController> ().DisableGFX ();
@@ -58,16 +65,20 @@ public class PlayerCannonController : CannonController {
 			return;
 		if (!canShoot)
 			return;
+
+		if (dist < minRange || dist > maxRange)
+			return;
 		
+
 
 		GameObject projectile = Instantiate (ammo, cannonTransform.position, cannonTransform.rotation) as GameObject;
 		projectile.GetComponent<Rigidbody> ().AddForce (cannonPower * projectile.transform.forward, ForceMode.VelocityChange);
 		projectile.GetComponent<PlayerModelAmmo> ().LockPlayer (playerObj);
-
+		particle.Play ();
 		Debug.Log ("FIRE");
 		elapsedTime = 0.0f;
+		active = false;
 		playerObj = null;
-		target = null;
 	}
 
 }

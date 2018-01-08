@@ -33,45 +33,59 @@ public class PlayerController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		currentSpeed = rb.velocity.magnitude;
-		canJump = isGrounded ();
+		if(!canJump)
+			canJump = isGrounded ();
 
 		if (inputEnabled) {
-			if (Input.GetKeyUp (KeyCode.LeftShift)) {
+			if (Input.GetKeyUp (KeyCode.LeftShift)) 
 				maxSpeed = walkSpeed;
-
-			}
-			if (Input.GetKeyDown (KeyCode.LeftShift)) {
+			if (Input.GetKeyDown (KeyCode.LeftShift)) 
 				maxSpeed = runSpeed;
-			}
+			
 
 
 
 			if (Input.GetKey (KeyCode.W))
-				rb.AddForce (transform.forward * acceleration);	
+				rb.AddForce (transform.forward * acceleration, ForceMode.VelocityChange);	
 			if (Input.GetKey (KeyCode.S))
-				rb.AddForce (transform.forward * -acceleration);
+				rb.AddForce (transform.forward * -acceleration, ForceMode.VelocityChange);
 		
 			if (Input.GetKey (KeyCode.A))
-				rb.AddForce (transform.right * -acceleration);
+				rb.AddForce (transform.right * -acceleration, ForceMode.VelocityChange);
 			if (Input.GetKey (KeyCode.D))
-				rb.AddForce (transform.right * acceleration);
+				rb.AddForce (transform.right * acceleration, ForceMode.VelocityChange);
+
+			if(Input.GetKey(KeyCode.Q))
+				rb.AddTorque (Vector3.up * -acceleration, ForceMode.VelocityChange);
+
+			if(Input.GetKey(KeyCode.E))
+				rb.AddTorque (Vector3.up * acceleration, ForceMode.VelocityChange);
+
+			rb.AddTorque (Vector3.up * Input.GetAxis ("Mouse X") * acceleration, ForceMode.VelocityChange);
 		}
-		SpeedClamp ();
 
-		if (Input.GetKeyDown (KeyCode.Space) && isGrounded() && inputEnabled)
+
+
+		if (Input.GetKeyDown (KeyCode.Space) && canJump && inputEnabled) {
 			rb.AddForce (transform.up * jumpStrength);
+			canJump = false;
+		}
 
+		SpeedClamp ();
 	}
 
 	void SpeedClamp(){
 
 		//only checks in x and z axis
 		Vector2 currVelocity = new Vector2(rb.velocity.x, rb.velocity.z);
-		if (currVelocity.magnitude > maxSpeed && isGrounded()) {
+		if (currVelocity.magnitude > maxSpeed) {
 			currVelocity.Normalize ();
 			rb.velocity = new Vector3 (currVelocity.x * maxSpeed, rb.velocity.y, currVelocity.y * maxSpeed);
 
 		}
+
+		//stops rotation
+		rb.angularVelocity = rb.angularVelocity*0.95f;
 	}
 
 	bool isGrounded(){

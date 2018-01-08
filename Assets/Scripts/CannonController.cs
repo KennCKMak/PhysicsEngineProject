@@ -23,7 +23,7 @@ public class CannonController : MonoBehaviour {
 	public float elapsedTime = 0.0f;
 	public float fireRate = 5.0f;
 
-
+	protected ParticleSystem particle;
 	protected Transform cannonTransform;
 	// Use this for initialization
 	void Start () {
@@ -55,8 +55,10 @@ public class CannonController : MonoBehaviour {
 		else
 			ammoMass = ammo.GetComponent<Rigidbody> ().mass;
 
+
 		angle = minAngle;
-		cannonTransform = transform.FindChild ("CannonGFX").FindChild ("CannonModel");
+		cannonTransform = transform.GetChild(0).FindChild ("CannonModel");
+		particle = cannonTransform.GetChild (3).GetComponent<ParticleSystem> ();
 		canShoot = true;
 		elapsedTime = 0;
 	}
@@ -154,9 +156,10 @@ public class CannonController : MonoBehaviour {
 		if (distX < minRange || distX > maxRange) {
 			return;
 		}
-		GameObject projectile = Instantiate (ammo, cannonTransform.position, cannonTransform.rotation) as GameObject;
 
+		GameObject projectile = Instantiate (ammo, cannonTransform.position, cannonTransform.rotation) as GameObject;
 		projectile.GetComponent<Rigidbody> ().AddForce (cannonPower * projectile.transform.forward, ForceMode.VelocityChange);
+		particle.Play ();
 		Destroy (projectile, 7.0f);
 		elapsedTime = 0.0f;
 	}
