@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour {
 
+	public bool[] CheckpointArray;
+
 	// Use this for initialization
 	void Start () {
 		

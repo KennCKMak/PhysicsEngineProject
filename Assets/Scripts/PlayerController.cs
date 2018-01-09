@@ -36,8 +36,15 @@ public class PlayerController : MonoBehaviour {
 		if(!canJump)
 			canJump = isGrounded ();
 
+
+		if (Input.GetKeyDown (KeyCode.Space) && canJump && inputEnabled) {
+			rb.AddForce (transform.up * jumpStrength);
+			canJump = false;
+		}
+		SpeedClamp ();
+
 		if (inputEnabled) {
-			if (Input.GetKeyUp (KeyCode.LeftShift)) 
+			if (Input.GetKeyUp (KeyCode.LeftShift) && !isOnIce()) 
 				maxSpeed = walkSpeed;
 			if (Input.GetKeyDown (KeyCode.LeftShift)) 
 				maxSpeed = runSpeed;
@@ -63,18 +70,26 @@ public class PlayerController : MonoBehaviour {
 
 			rb.AddTorque (Vector3.up * Input.GetAxis ("Mouse X") * acceleration, ForceMode.VelocityChange);
 		}
+		if (!Input.GetKey (KeyCode.LeftShift) && maxSpeed == runSpeed && !isOnIce ())
+			maxSpeed = walkSpeed;
 
+		if (transform.eulerAngles.x != 0 || transform.eulerAngles.z != 0) {
+			Vector3 newRot = new Vector3 (0, transform.eulerAngles.y, 0);
+			transform.eulerAngles = Vector3.Lerp (transform.eulerAngles, newRot, 10.0f);
 
-
-		if (Input.GetKeyDown (KeyCode.Space) && canJump && inputEnabled) {
-			rb.AddForce (transform.up * jumpStrength);
-			canJump = false;
 		}
 
-		SpeedClamp ();
+
+
 	}
 
 	void SpeedClamp(){
+
+		//stops rotation
+		rb.angularVelocity = rb.angularVelocity*0.95f;
+
+
+
 
 		//only checks in x and z axis
 		Vector2 currVelocity = new Vector2(rb.velocity.x, rb.velocity.z);
@@ -84,12 +99,23 @@ public class PlayerController : MonoBehaviour {
 
 		}
 
-		//stops rotation
-		rb.angularVelocity = rb.angularVelocity*0.95f;
 	}
 
 	bool isGrounded(){
 		return Physics.Raycast (transform.position, -Vector3.up, transform.localScale.y + 0.5f);
+	}
+
+	bool isOnIce(){
+		RaycastHit hit;
+		if (Physics.Raycast (transform.position, -Vector3.up, out hit, transform.localScale.y + 0.5f)) {
+			if (hit.transform.tag == "Ice")
+				return true;
+			else
+				return false;
+		}
+		return false;
+
+		//return Physics.Raycast (transform.position, -Vector3.up, transform.localScale.y + 0.5f);
 	}
 
 	public void DisableInput(){

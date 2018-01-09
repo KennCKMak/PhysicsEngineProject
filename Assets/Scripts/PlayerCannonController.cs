@@ -32,6 +32,7 @@ public class PlayerCannonController : CannonController {
 				elapsedTime += Time.deltaTime;
 			Fire ();
 		}
+
 		if (playerObj){
 			playerObj.transform.position = cannonTransform.position;
 			playerObj.transform.rotation = cannonTransform.rotation;
@@ -75,7 +76,9 @@ public class PlayerCannonController : CannonController {
 		projectile.GetComponent<Rigidbody> ().AddForce (cannonPower * projectile.transform.forward, ForceMode.VelocityChange);
 		projectile.GetComponent<PlayerModelAmmo> ().LockPlayer (playerObj);
 		particle.Play ();
-		Debug.Log ("FIRE");
+
+
+		//Debug.Log ("FIRE");
 		elapsedTime = 0.0f;
 		active = false;
 		playerObj = null;
