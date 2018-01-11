@@ -9,6 +9,7 @@ public class PlayerModelAmmo : MonoBehaviour {
 	private Transform player;
 	public GameObject smoke;
 	public GameObject burst;
+	public Transform target;
 	void Start () {
 		Invoke ("Reset", 10.0f);
 	}
@@ -21,7 +22,7 @@ public class PlayerModelAmmo : MonoBehaviour {
 		}
 	}
 	void OnTriggerEnter(Collider other){
-		if (other.transform.name == "TargetPlatform" || other.transform.tag == "TargetPlatform") {
+		if (other.transform == target) {
 			
 			//player.parent = null;
 			//player.eulerAngles = new Vector3 (0, player.eulerAngles.y, 0);

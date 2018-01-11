@@ -18,6 +18,7 @@ public class PlayerCannonController : CannonController {
 		
 		Vector3 dir = target.transform.position - transform.position;
 		dist = Mathf.Sqrt(dir.x*dir.x + dir.z*dir.z);
+
 	}
 	
 	// Update is called once per frame
@@ -26,13 +27,14 @@ public class PlayerCannonController : CannonController {
 			CalculateMaxRange ();
 
 
-		if (target && active) {
+		if (target) {
 			Aim ();
-			if (elapsedTime < fireRate)
-				elapsedTime += Time.deltaTime;
-			Fire ();
+			if (active) {
+				if (elapsedTime < fireRate)
+					elapsedTime += Time.deltaTime;
+				Fire ();
+			}
 		}
-
 		if (playerObj){
 			playerObj.transform.position = cannonTransform.position;
 			playerObj.transform.rotation = cannonTransform.rotation;
@@ -44,7 +46,6 @@ public class PlayerCannonController : CannonController {
 		if (other.transform.name == "Player" && other.gameObject.GetComponent<PlayerController> ()) {
 			//Debug.Log ("hit player");
 			if (!other.GetComponent<PlayerController> ().usingCannon){
-				Debug.Log ("Got inc annon");
 
 				active = true;
 				playerObj = other.gameObject;
@@ -57,7 +58,25 @@ public class PlayerCannonController : CannonController {
 		}
 	}
 
+	protected override void Aim(){
+		Vector3 dir = target.transform.position - transform.position;
+		float distX = Mathf.Sqrt(dir.x*dir.x + dir.z*dir.z);
+		if (!active) {
+			angle = 15;
+			Quaternion idleRotation = Quaternion.Euler (-angle, 0, 0);
+			cannonTransform.rotation = Quaternion.Slerp (cannonTransform.rotation, idleRotation, rotateSpeed / 2 * Time.deltaTime);
+			return;
+		}
+		if(active){
+			CalculateFiringAngle ();
+			Mathf.Clamp (angle, minAngle, maxAngle);
 
+			Vector3 newRotation = Quaternion.LookRotation (target.transform.position - cannonTransform.position).eulerAngles;
+			newRotation.x = -angle;
+			Vector3 predictedRotation = Vector3.Slerp (cannonTransform.rotation.eulerAngles, newRotation, rotateSpeed * Time.deltaTime);
+			cannonTransform.rotation = Quaternion.Slerp (cannonTransform.rotation, Quaternion.Euler (newRotation), rotateSpeed * Time.deltaTime);//predictedRotation;
+		}
+	}
 
 	protected override void Fire(){
 		if (elapsedTime < fireRate)
@@ -71,10 +90,13 @@ public class PlayerCannonController : CannonController {
 			return;
 		
 
-
-		GameObject projectile = Instantiate (ammo, cannonTransform.position, cannonTransform.rotation) as GameObject;
+		Vector3 lookRot = Quaternion.LookRotation (target.transform.position - cannonTransform.position).eulerAngles;
+		lookRot.x = -angle;
+		Quaternion projectileRotation = Quaternion.Euler (lookRot);
+		GameObject projectile = Instantiate (ammo, cannonTransform.position, projectileRotation) as GameObject;
 		projectile.GetComponent<Rigidbody> ().AddForce (cannonPower * projectile.transform.forward, ForceMode.VelocityChange);
 		projectile.GetComponent<PlayerModelAmmo> ().LockPlayer (playerObj);
+		projectile.GetComponent<PlayerModelAmmo> ().target = this.target;
 		particle.Play ();
 
 
@@ -83,5 +105,10 @@ public class PlayerCannonController : CannonController {
 		active = false;
 		playerObj = null;
 	}
-
+	void OnDrawGizmos(){
+		/*Gizmos.color = Color.blue;
+		Gizmos.DrawWireSphere (transform.position, maxRange);
+		Gizmos.DrawWireSphere (transform.position, minRange);
+	*/
+	}
 }

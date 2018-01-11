@@ -23,11 +23,15 @@ public class PlayerController : MonoBehaviour {
 	public float jumpStrength = 15.0f;
 
 	public bool usingCannon;
+
+
+	int layerMask = 1 << 8;
 	// Use this for initialization
 	void Start () {
 		rb = GetComponent<Rigidbody> ();
 		maxSpeed = walkSpeed;
 		SetHealth (maxHealth);
+		layerMask = ~layerMask;
 	}
 	
 	// Update is called once per frame
@@ -38,8 +42,8 @@ public class PlayerController : MonoBehaviour {
 
 
 		if (Input.GetKeyDown (KeyCode.Space) && canJump && inputEnabled) {
-			rb.AddForce (transform.up * jumpStrength);
 			canJump = false;
+			rb.AddForce (transform.up * jumpStrength);
 		}
 		SpeedClamp ();
 
@@ -72,16 +76,16 @@ public class PlayerController : MonoBehaviour {
 		}
 		if (!Input.GetKey (KeyCode.LeftShift) && maxSpeed == runSpeed && !isOnIce ())
 			maxSpeed = walkSpeed;
-
+		
+		//slows down rotation 
 		if (transform.eulerAngles.x != 0 || transform.eulerAngles.z != 0) {
 			Vector3 newRot = new Vector3 (0, transform.eulerAngles.y, 0);
 			transform.eulerAngles = Vector3.Lerp (transform.eulerAngles, newRot, 10.0f);
 
 		}
-
-
-
 	}
+
+
 
 	void SpeedClamp(){
 
@@ -102,12 +106,20 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	bool isGrounded(){
-		return Physics.Raycast (transform.position, -Vector3.up, transform.localScale.y + 0.5f);
+		RaycastHit hit;
+		if (Physics.Raycast(transform.position, -Vector3.up, out hit, transform.localScale.y + 0.01f, layerMask)){
+			if(hit.transform.tag != "Player")
+				return true;
+			else
+				return false;
+		}
+		return false;
 	}
+	
 
 	bool isOnIce(){
 		RaycastHit hit;
-		if (Physics.Raycast (transform.position, -Vector3.up, out hit, transform.localScale.y + 0.5f)) {
+		if (Physics.Raycast (transform.position, -Vector3.up, out hit, transform.localScale.y + 0.01f, layerMask)) {
 			if (hit.transform.tag == "Ice")
 				return true;
 			else

@@ -36,11 +36,10 @@ public class CannonController : MonoBehaviour {
 		if (oldCannonPower != cannonPower)
 			CalculateMaxRange ();
 		
-		if (elapsedTime < fireRate)
-			elapsedTime += Time.deltaTime;
-		
 		if (target){
 			Aim ();
+			if (elapsedTime < fireRate)
+				elapsedTime += Time.deltaTime;
 			if(ammo)
 				Fire ();
 		}
@@ -94,9 +93,9 @@ public class CannonController : MonoBehaviour {
 			Mathf.Clamp (angle, minAngle, maxAngle);
 
 			Vector3 newRotation = Quaternion.LookRotation (target.transform.position - cannonTransform.position).eulerAngles;
-
-			cannonTransform.localEulerAngles = Vector3.Slerp (cannonTransform.rotation.eulerAngles, newRotation, rotateSpeed * Time.deltaTime);
-			cannonTransform.localEulerAngles = new Vector3 (-angle, cannonTransform.localEulerAngles.y, cannonTransform.localEulerAngles.z);
+			newRotation.x = -angle;
+			Vector3 predictedRotation = Vector3.Slerp (cannonTransform.rotation.eulerAngles, newRotation, rotateSpeed * Time.deltaTime);
+			cannonTransform.rotation = Quaternion.Slerp (cannonTransform.rotation, Quaternion.Euler (newRotation), rotateSpeed * Time.deltaTime);//predictedRotation;
 		}
 	}
 
@@ -107,12 +106,6 @@ public class CannonController : MonoBehaviour {
 		Vector3 dir = target.transform.position - transform.position;
 		float distX = Mathf.Sqrt(dir.x*dir.x + dir.z*dir.z);
 		float distY = dir.y;
-
-		if (distX < minRange || distX > maxRange) {
-			angle = 15;
-			canShoot = false;
-			return;
-		}
 
 
 		//quadratic formula
@@ -164,5 +157,10 @@ public class CannonController : MonoBehaviour {
 		elapsedTime = 0.0f;
 	}
 
+	void OnDrawGizmos(){
+		Gizmos.color = Color.red;
+		Gizmos.DrawWireSphere (transform.position, maxRange);
+		Gizmos.DrawSphere (transform.position, minRange);
+	}
 
 }
