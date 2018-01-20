@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: ce169bd5b669c5e4f8e31dd7a0a1e49e
+timeCreated: 1516396149
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Microsoft Yi Baiti
+  fontNames:
+  - Microsoft Yi Baiti
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
